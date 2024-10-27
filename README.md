@@ -1,2 +1,54 @@
 # C2Magic
-C2Magic is a lightweight Command and Control (C2) server designed for managing multiple client devices through a centralized server interface.
+
+C2Magic is a lightweight Command and Control (C2) server designed for managing multiple client devices through a centralized server interface. C2Magic allows users to send commands to specific devices or broadcast commands to all connected devices, with a unique identifier system for easy management. The server can handle multiple client connections concurrently and displays output in a user-friendly, color-coded format.
+
+## Features
+
+- **Unique Device ID System**: Assigns a unique ID to each device upon connection, making it easier to select and manage devices.
+- **Concurrent Command Handling**: Allows multiple client devices to connect and process commands concurrently.
+- **Customizable Command Broadcast**: Send commands to a specific device by its unique ID or broadcast to all connected devices.
+- **Command Output in Color**: The output from each device is displayed in green for easy differentiation.
+- **Intuitive Command Interface**: Keeps users in the command session for a device, with the ability to send multiple commands without returning to the main menu.
+
+## Installation
+
+1. **Clone the Repository**
+```bash
+git clone https://github.com/yourusername/C2Magic.git
+cd C2Magic
+```
+2. Install Dependencies C2Magic requires Go and the fatih/color package for colorized output. Install it by running:
+```bash
+go get -u github.com/fatih/color
+```
+3. Build the Server
+```bash
+go build -o C2Magic C2Magic.go
+```
+
+## Usage
+
+To start the C2Magic server, specify the port number:
+```bash
+./C2Magic <Port>
+```
+
+## Server Command Menu
+
+The main command menu has the following options:
+
+1. Send Command to All Clients: Broadcast a command to all connected clients.
+2. Send Command to a Specific Client: Send a command to a specific client by entering its unique device ID.
+3. List Connected Clients: Display all connected clients, including their ID and IP address.
+
+## Sending Commands to Devices
+
+Once connected to a device, you can send multiple commands without returning to the main menu. Type `back` to return to the main menu.
+
+## Contributions
+
+Contributions are welcome! If you’d like to contribute to C2Magic, please fork the repository and create a pull request with your modifications.
+
+## Disclaimer
+
+This project is intended for educational and ethical testing purposes only. Use responsibly and ensure you have permission before connecting or managing devices through C2Magic.
