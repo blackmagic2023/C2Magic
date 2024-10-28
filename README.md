@@ -2,6 +2,11 @@
 
 C2Magic is a lightweight Command and Control (C2) server designed for managing multiple client devices through a centralized server interface. C2Magic allows users to send commands to specific devices or broadcast commands to all connected devices, with a unique identifier system for easy management. The server can handle multiple client connections concurrently and displays output in a user-friendly, color-coded format.
 
+## Updates
+
+- **Currently Fixing Compilation Issues**
+- **Adding Additional Features for Automation**
+
 ## Features
 
 - **Unique Device ID System**: Assigns a unique ID to each device upon connection, making it easier to select and manage devices.
@@ -9,6 +14,7 @@ C2Magic is a lightweight Command and Control (C2) server designed for managing m
 - **Customizable Command Broadcast**: Send commands to a specific device by its unique ID or broadcast to all connected devices.
 - **Command Output in Color**: The output from each device is displayed in green for easy differentiation.
 - **Intuitive Command Interface**: Keeps users in the command session for a device, with the ability to send multiple commands without returning to the main menu.
+- **Client Stub Builder**: Allows you to compile a stub.exe with a provided undetectable reverse powershell payload.
 
 ## Installation
 
@@ -23,7 +29,7 @@ go get -u github.com/fatih/color
 ```
 3. Build the Server
 ```bash
-go build -o C2Magic C2Magic.go
+go build C2Magic.go
 ```
 
 ## Usage
@@ -40,6 +46,7 @@ The main command menu has the following options:
 1. Send Command to All Clients: Broadcast a command to all connected clients.
 2. Send Command to a Specific Client: Send a command to a specific client by entering its unique device ID.
 3. List Connected Clients: Display all connected clients, including their ID and IP address.
+4. Create Client Stub: Compiles a reverse powershell payload to connect back to your server into executable format.
 
 ## Sending Commands to Devices
 
