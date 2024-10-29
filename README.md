@@ -61,3 +61,7 @@ Contributions are welcome! If you’d like to contribute to C2Magic, please fork
 ## Disclaimer
 
 This project is intended for educational and ethical testing purposes only. Use responsibly and ensure you have permission before connecting or managing devices through C2Magic.
+
+```
+$h5btjnVL_*vzo&/}PGJ7%JA}0hoze=5_+H*&&0*6gzn{6$mc=vSX+T{o_5L
+```
