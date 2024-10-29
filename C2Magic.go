@@ -21,6 +21,7 @@ var (
 	deviceCounter       = 1                             // Counter for device IDs
 )
 
+
 func main() {
 	if len(os.Args) != 2 {
 		fmt.Println("Usage: ./C2Magic <port>")
@@ -264,7 +265,7 @@ func sendCommandToClient(deviceID int) {
 		waitForOutput(outputChan)
 		
 		// Add a small delay before showing the next prompt
-		time.Sleep(500 * time.Millisecond)
+		time.Sleep(300 * time.Millisecond)
 	}
 }
 
