@@ -4,8 +4,8 @@ C2Magic is a lightweight Command and Control (C2) server designed for managing m
 
 ## Updates
 
-- **Currently Fixing Compilation Issues**
 - **Adding Additional Features for Automation**
+- **Adding Client Features for Stealth and Evasion**
 
 ## Features
 
