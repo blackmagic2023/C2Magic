@@ -25,8 +25,6 @@ cd C2Magic
 ```
 2. Install Dependencies C2Magic requires Go and the fatih/color package for colorized output, and Mingw compiler for payload compilation. Install it by running:
 ```bash
-sudo apt update
-sudo apt install mingw-w64
 go get -u github.com/fatih/color
 ```
 3. Build the Server
