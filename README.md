@@ -20,7 +20,7 @@ C2Magic is a lightweight Command and Control (C2) server designed for managing m
 
 1. **Clone the Repository**
 ```bash
-git clone https://github.com/yourusername/C2Magic.git
+git clone https://github.com/blackmagic2023/C2Magic.git
 cd C2Magic
 ```
 2. Install Dependencies C2Magic requires Go and the fatih/color package for colorized output, and Mingw compiler for payload compilation. Install it by running:
