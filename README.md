@@ -3,7 +3,7 @@
 C2Magic is a lightweight Command and Control (C2) server designed for managing multiple client devices through a centralized server interface. C2Magic allows users to send commands to specific devices or broadcast commands to all connected devices, with a unique identifier system for easy management. The server can handle multiple client connections concurrently and displays output in a user-friendly, color-coded format. **C2Magic was designed to be ran on Kali Linux 2024.2+, Debian 12 BookWorm!**
 
 ## Updates
-- **Adding additional payload**
+- **Adding additional payloads**
 - **Adding Additional Features for Automation**
 - **Adding Client Features for Stealth and Evasion**
 
